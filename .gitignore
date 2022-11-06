@@ -1,0 +1,15 @@
+# Project exclude paths
+/node_modules/
+/.env
+/.idea
+/vendor
+.env
+.DS_Store
+/.docker/
+.phpintel
+.fleet
+
+# Project exclude paths
+/storage/app/
+/storage/debugbar/
+/storage/framework/
