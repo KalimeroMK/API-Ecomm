@@ -5,14 +5,15 @@ namespace Modules\Banner\Http\Controllers\Api;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\ResourceCollection;
-use Modules\Banner\Http\Requests\Api\Search;
-use Modules\Banner\Http\Requests\Api\Store;
-use Modules\Banner\Http\Requests\Api\Update;
 use Modules\Banner\Http\Resource\BannerResource;
 use Modules\Banner\Models\Banner;
 use Modules\Banner\Service\BannerService;
 use Modules\Core\Helpers\Helper;
 use Modules\Core\Http\Controllers\Api\CoreController;
+use Modules\Post\Http\Requests\Api\Search;
+use Modules\Post\Http\Requests\Api\Store;
+use Modules\Post\Http\Requests\Api\Update;
+use Modules\Product\Exceptions\SearchException;
 
 class BannerController extends CoreController
 {
@@ -29,6 +30,7 @@ class BannerController extends CoreController
      * @param  Search  $request
      *
      * @return ResourceCollection
+     * @throws SearchException
      */
     public function index(Search $request): ResourceCollection
     {

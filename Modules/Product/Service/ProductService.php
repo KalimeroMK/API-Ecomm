@@ -8,6 +8,7 @@ use Modules\Category\Models\Category;
 use Modules\Core\Helpers\Condition;
 use Modules\Core\Service\CoreService;
 use Modules\Core\Traits\ImageUpload;
+use Modules\Product\Exceptions\SearchException;
 use Modules\Product\Models\Product;
 use Modules\Product\Repository\ProductRepository;
 use Modules\Size\Models\Size;
@@ -24,9 +25,19 @@ class ProductService extends CoreService
     
     use ImageUpload;
     
-    public function findAll($data)
+    /**
+     * @param $data
+     *
+     * @return mixed
+     * @throws SearchException
+     */
+    public function getAll($data): mixed
     {
-        return $this->product_repository->search($data);
+        try {
+            return $this->product_repository->search($data);
+        } catch (Exception $exception) {
+            throw new SearchException($exception);
+        }
     }
     
     /**

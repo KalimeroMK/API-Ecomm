@@ -7,6 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Modules\Core\Helpers\Helper;
 use Modules\Core\Http\Controllers\CoreController;
+use Modules\Post\Http\Requests\Api\Search;
 use Modules\Post\Http\Requests\Api\Store;
 use Modules\Post\Http\Requests\Api\Update;
 use Modules\Post\Http\Resources\PostResource;
@@ -25,16 +26,19 @@ class PostController extends CoreController
     }
     
     /**
+     * @param  Search  $request
+     *
      * @return ResourceCollection
      */
-    public function index(): ResourceCollection
+    public function index(Search $request): ResourceCollection
     {
-        return PostResource::collection($this->post_service->getAll());
+        return PostResource::collection($this->post_service->getAll($request->validated()));
     }
-
+    
     /**
      *
-     * @param Store $request
+     * @param  Store  $request
+     *
      * @return mixed
      */
     public function store(Store $request): mixed

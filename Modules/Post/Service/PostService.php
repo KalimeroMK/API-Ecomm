@@ -9,6 +9,7 @@ use Modules\Core\Service\CoreService;
 use Modules\Core\Traits\ImageUpload;
 use Modules\Post\Models\Post;
 use Modules\Post\Repository\PostRepository;
+use Modules\Product\Exceptions\SearchException;
 use Modules\Tag\Models\Tag;
 use Modules\User\Models\User;
 
@@ -113,11 +114,18 @@ class PostService extends CoreService
     }
     
     /**
+     * @param $data
+     *
      * @return mixed
+     * @throws SearchException
      */
-    public function getAll(): mixed
+    public function getAll($data): mixed
     {
-        return $this->post_repository->findAll();
+        try {
+            return $this->post_repository->search($data);
+        } catch (Exception $exception) {
+            throw new SearchException($exception);
+        }
     }
     
     /**
@@ -131,12 +139,12 @@ class PostService extends CoreService
             $originName = $request->file('upload')->getClientOriginalName();
             $fileName   = pathinfo($originName, PATHINFO_FILENAME);
             $extension  = $request->file('upload')->getClientOriginalExtension();
-            $fileName   = $fileName.'_'.time().'.'.$extension;
+            $fileName   = $fileName . '_' . time() . '.' . $extension;
             
             $request->file('upload')->move(public_path('images'), $fileName);
             
             $CKEditorFuncNum = $request->input('CKEditorFuncNum');
-            $url             = asset('images/'.$fileName);
+            $url             = asset('images/' . $fileName);
             $msg             = 'Image uploaded successfully';
             $response        = "<script>window.parent.CKEDITOR.tools.callFunction($CKEditorFuncNum, '$url', '$msg')</script>";
             

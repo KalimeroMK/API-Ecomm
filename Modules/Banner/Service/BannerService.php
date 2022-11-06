@@ -6,6 +6,7 @@ use Exception;
 use Modules\Banner\Repository\BannerRepository;
 use Modules\Core\Service\CoreService;
 use Modules\Core\Traits\ImageUpload;
+use Modules\Product\Exceptions\SearchException;
 
 class BannerService extends CoreService
 {
@@ -106,13 +107,14 @@ class BannerService extends CoreService
     
     /**
      * @return mixed|string
+     * @throws SearchException
      */
     public function getAll($data): mixed
     {
         try {
             return $this->banner_repository->search($data);
         } catch (Exception $exception) {
-            return $exception->getMessage();
+            throw new SearchException($exception);
         }
     }
 }

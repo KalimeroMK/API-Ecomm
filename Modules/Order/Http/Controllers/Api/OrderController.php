@@ -8,11 +8,13 @@ use Illuminate\Http\Resources\Json\ResourceCollection;
 use Modules\Banner\Http\Resource\BannerResource;
 use Modules\Core\Helpers\Helper;
 use Modules\Core\Http\Controllers\Api\CoreController;
-use Modules\Order\Http\Requests\Api\Store;
-use Modules\Order\Http\Requests\Api\Update;
 use Modules\Order\Http\Resources\OrderResource;
 use Modules\Order\Models\Order;
 use Modules\Order\Service\OrderService;
+use Modules\Post\Http\Requests\Api\Search;
+use Modules\Post\Http\Requests\Api\Store;
+use Modules\Post\Http\Requests\Api\Update;
+use Modules\Product\Exceptions\SearchException;
 
 class OrderController extends CoreController
 {
@@ -26,11 +28,14 @@ class OrderController extends CoreController
     }
     
     /**
+     * @param  Search  $request
+     *
      * @return ResourceCollection
+     * @throws SearchException
      */
-    public function index(): ResourceCollection
+    public function index(Search $request): ResourceCollection
     {
-        return OrderResource::collection($this->order_service->getAll());
+        return OrderResource::collection($this->order_service->getAll($request->validated()));
     }
     
     /**

@@ -5,6 +5,8 @@ namespace Modules\Brand\Http\Controllers\Api;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Modules\Brand\Exceptions\SearchException;
+use Modules\Brand\Http\Requests\Api\Search;
 use Modules\Brand\Http\Requests\Api\Store;
 use Modules\Brand\Http\Requests\Api\Update;
 use Modules\Brand\Http\Resource\BrandResource;
@@ -25,11 +27,14 @@ class BrandController extends CoreController
     }
     
     /**
+     * @param  Search  $request
+     *
      * @return ResourceCollection
+     * @throws SearchException
      */
-    public function index(): ResourceCollection
+    public function index(Search $request): ResourceCollection
     {
-        return BrandResource::collection($this->brand_service->getAll());
+        return BrandResource::collection($this->brand_service->getAll($request->validated()));
     }
     
     /**

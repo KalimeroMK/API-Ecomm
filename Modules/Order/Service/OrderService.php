@@ -11,6 +11,7 @@ use Modules\Core\Helpers\Helper;
 use Modules\Core\Notifications\StatusNotification;
 use Modules\Order\Models\Order;
 use Modules\Order\Repository\OrderRepository;
+use Modules\Product\Exceptions\SearchException;
 use Modules\Shipping\Models\Shipping;
 use Modules\User\Models\User;
 
@@ -69,13 +70,14 @@ class OrderService
     
     /**
      * @return mixed|string
+     * @throws SearchException
      */
-    public function getAll(): mixed
+    public function getAll($data): mixed
     {
         try {
-            return $this->order_repository->findAll();
+            return $this->order_repository->search($data);
         } catch (Exception $exception) {
-            return $exception->getMessage();
+            throw new SearchException($exception);
         }
     }
     
@@ -91,7 +93,7 @@ class OrderService
         try {
             $order                      = new Order();
             $order_data                 = $data;
-            $order_data['order_number'] = 'ORD-'.strtoupper(Str::random(10));
+            $order_data['order_number'] = 'ORD-' . strtoupper(Str::random(10));
             $order_data['user_id']      = Auth::id();
             $order_data['shipping_id']  = $data->shipping;
             $shipping                   = Shipping::whereId($order_data['shipping_id'])->pluck('price');
@@ -143,7 +145,7 @@ class OrderService
      *
      * @return mixed
      */
-    public function update($data,$id): mixed
+    public function update($data, $id): mixed
     {
         try {
             $order = $this->order_repository->findById($id);
