@@ -186,12 +186,7 @@ return [
         /*
          * Package Service Providers...
          */
-        Intervention\Image\ImageServiceProvider::class,
         Barryvdh\DomPDF\ServiceProvider::class,
-        Srmklive\PayPal\Providers\PayPalServiceProvider::class,
-        PrettyRoutes\ServiceProvider::class,
-        Spatie\Feed\FeedServiceProvider::class,
-        PrettyRoutes\ServiceProvider::class,
         FilterableServiceProvider::class,
         
         /*

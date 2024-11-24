@@ -14,7 +14,7 @@ class ProductNewsletterCommand extends Command
     
     protected $description = 'Command description';
     
-    public function handle()
+    public function handle(): void
     {
         $products    = Product::orderBy('id', 'asc')
                               ->take(10)
