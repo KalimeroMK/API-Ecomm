@@ -22,12 +22,14 @@ use Laravel\Sanctum\HasApiTokens;
 use Laravel\Sanctum\PersonalAccessToken;
 use Modules\Billing\Models\Wishlist;
 use Modules\Cart\Models\Cart;
-use Modules\LoginSecurity\Models\LoginSecurity;
+use Modules\Core\Traits\ClearsCache;
+use Modules\Google2fa\Models\Google2fa;
+use Modules\Notification\Models\Notification;
 use Modules\Order\Models\Order;
 use Modules\Post\Models\Post;
 use Modules\Post\Models\PostComment;
 use Modules\Product\Models\ProductReview;
-use Modules\User\Database\factories\UserFactory;
+use Modules\User\Database\Factories\UserFactory;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasPermissions;
@@ -49,13 +51,13 @@ use Spatie\Permission\Traits\HasRoles;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Collection|Post[] $posts
- * @package App\Models
  * @property-read int|null $carts_count
  * @property-read int|null $orders_count
  * @property-read int|null $post_comments_count
  * @property-read int|null $posts_count
  * @property-read int|null $product_reviews_count
  * @property-read int|null $wishlists_count
+ *
  * @method static Builder|User newModelQuery()
  * @method static Builder|User newQuery()
  * @method static Builder|User query()
@@ -71,13 +73,17 @@ use Spatie\Permission\Traits\HasRoles;
  * @method static Builder|User whereRememberToken($value)
  * @method static Builder|User whereStatus($value)
  * @method static Builder|User whereUpdatedAt($value)
+ *
  * @mixin Eloquent
+ *
  * @property-read Collection|Permission[] $permissions
  * @property-read int|null $permissions_count
  * @property-read Collection|Role[] $roles
  * @property-read int|null $roles_count
+ *
  * @method static Builder|User permission($permissions)
  * @method static Builder|User role($roles, $guard = null)
+ *
  * @property-read DatabaseNotificationCollection|DatabaseNotification[] $notifications
  * @property-read int|null $notifications_count
  * @property-read Collection|Cart[] $carts
@@ -90,89 +96,89 @@ use Spatie\Permission\Traits\HasRoles;
  */
 class User extends Authenticatable
 {
-    use HasFactory;
-    use HasRoles;
-    use HasPermissions;
-    use Notifiable;
+    use ClearsCache;
     use HasApiTokens;
-    
+    use HasFactory;
+    use HasPermissions;
+    use HasRoles;
+    use Impersonate;
+    use Notifiable;
+
     protected $table = 'users';
-    
-    protected $dates = [
+
+    /**
+     * @var string[]
+     */
+    protected array $dates = [
         'email_verified_at',
     ];
-    
+
     protected $hidden = [
         'password',
         'remember_token',
     ];
-    
+
     protected $fillable = [
         'name',
         'email',
         'email_verified_at',
         'password',
-        'photo',
-        'provider',
-        'provider_id',
         'status',
         'remember_token',
     ];
-    
-    /**
-     * @return UserFactory
-     */
-    protected static function Factory(): UserFactory
+
+    public static function Factory(): UserFactory
     {
         return UserFactory::new();
     }
-    
-    /**
-     * @return HasMany
-     */
+
     public function carts(): HasMany
     {
         return $this->hasMany(Cart::class);
     }
-    
-    /**
-     * @return HasMany
-     */
+
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
     }
-    
-    /**
-     * @return HasMany
-     */
+
     public function post_comments(): HasMany
     {
         return $this->hasMany(PostComment::class);
     }
-    
-    /**
-     * @return HasMany
-     */
+
     public function posts(): HasMany
     {
         return $this->hasMany(Post::class, 'added_by');
     }
-    
-    /**
-     * @return HasMany
-     */
+
     public function product_reviews(): HasMany
     {
         return $this->hasMany(ProductReview::class);
     }
-    
-    /**
-     * @return HasMany
-     */
+
     public function wishlists(): HasMany
     {
         return $this->hasMany(Wishlist::class);
     }
-    
+
+    /**
+     * Determine if the user is a super-admin.
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasRole('super-admin');
+    }
+
+    public function loginSecurity(): HasOne
+    {
+        return $this->hasOne(Google2fa::class);
+    }
+
+    public function unreadNotifications(): HasMany
+    {
+        return $this->hasMany(Notification::class, 'notifiable_id')
+            ->whereNull('read_at')
+            ->where('notifiable_type', get_class($this));
+    }
 }

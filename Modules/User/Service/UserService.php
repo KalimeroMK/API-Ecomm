@@ -2,129 +2,54 @@
 
 namespace Modules\User\Service;
 
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use LaravelIdea\Helper\Modules\Order\Models\_IH_Order_C;
-use Modules\Order\Models\Order;
-use Modules\User\Models\User;
+use Modules\Core\Service\CoreService;
 use Modules\User\Repository\UserRepository;
-use Spatie\Permission\Models\Role;
 
-class UserService
+class UserService extends CoreService
 {
     private UserRepository $user_repository;
-    
+
     public function __construct(UserRepository $user_repository)
     {
+        parent::__construct($user_repository);
         $this->user_repository = $user_repository;
     }
-    
+
     /**
-     * @return mixed
-     */
-    public function index(): mixed
-    {
-        return $this->user_repository->findAll();
-    }
-    
-    /**
-     * @param $request
+     * Updates a user.
      *
-     * @return void
+     * @param  int  $id  The ID of the user to update.
+     * @param  array<string, mixed>  $data  The data to update the user with.
+     * @return Model The updated user model.
      */
-    public function register($request): void
+    public function update(int $id, array $data): Model
     {
-        $input             = $request->all();
-        $input['password'] = Hash::make($input['password']);
-        $user              = User::create($input);
-        $user->assignRole($request->input('roles'));
-    }
-    
-    /**
-     * @param $id
-     * @param $data
-     *
-     * @return void
-     */
-    public function update($id, $data): void
-    {
-        $input = $data;
-        
-        if ( ! empty($input['password'])) {
-            $input['password'] = Hash::make($input['password']);
-        } else {
-            $input = Arr::except($input, ['password']);
+        $input = $this->prepareInputData($data);
+        $user = $this->user_repository->findById($id);
+        $this->user_repository->update($id, $input);
+
+        if (method_exists($user, 'syncRoles')) {
+            $user->syncRoles($data['roles'] ?? []);
         }
-        
-        $user = User::findOrFail($id);
-        
-        $user->update($input);
-        DB::table('model_has_roles')->where('model_id', $id)->delete();
-        $user->assignRole($data->input('roles'));
+
+        return $user;
     }
-    
+
     /**
-     * @param $id
+     * Prepares input data for updating a user.
      *
-     * @return array
+     * @param  array<string, mixed>  $data  The data to prepare.
+     * @return array<string, mixed> The prepared data.
      */
-    public function edit($id): array
+    private function prepareInputData(array $data): array
     {
-        return [
-            'user'     => User::find($id),
-            'roles'    => Role::all(),
-            'userRole' => User::find($id)->roles->pluck('name', 'name')->all(),
-        ];
+        if (! empty($data['password'])) {
+            return ['password' => Hash::make($data['password'])];
+        }
+
+        return Arr::except($data, ['password']);
     }
-    
-    /**
-     * @param $id
-     *
-     * @return mixed
-     */
-    public function show($id): mixed
-    {
-        return $this->user_repository->findById($id);
-    }
-    
-    public function create(): array
-    {
-        return [
-            'user'  => new User(),
-            'roles' => Role::all(),
-        ];
-    }
-    
-    /**
-     * @param $id
-     *
-     * @return void
-     */
-    public function destroy($id): void
-    {
-        $this->user_repository->delete($id);
-    }
-    
-    /**
-     * @param $id
-     *
-     * @return LengthAwarePaginator|_IH_Order_C|Order[]
-     */
-    public function orderUser($id)
-    {
-        return Order::with('shipping', 'user')->orderBy('id', 'DESC')->whereUserId($id)->paginate(10);
-    }
-    
-    /**
-     * @param $data
-     *
-     * @return void
-     */
-    public function store($data): void
-    {
-        $this->user_repository->create($data);
-    }
-    
 }

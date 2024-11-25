@@ -2,34 +2,27 @@
 
 namespace Modules\User\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-use JetBrains\PhpStorm\ArrayShape;
+use Modules\Core\Http\Requests\CoreRequest;
 
-class LoginRequest extends FormRequest
+class LoginRequest extends CoreRequest
 {
-    public mixed $name;
-    public mixed $email;
-    public mixed $password;
-    
-    #[ArrayShape(
-        [
-            'name'     => "string",
-            'email'    => "string",
-            'password' => "string",
-        ]
-    )
-    ]
+    public string $name;
+
+    public string $email;
+
+    public string $password;
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, string>
+     */
     public function rules(): array
     {
         return [
-            'name'     => 'required|min:4',
-            'email'    => 'required|email',
-            'password' => 'required|min:8',
+            'name' => 'required|string|min:4',
+            'email' => 'required|email',
+            'password' => 'required|string|min:8',
         ];
-    }
-    
-    public function authorize(): bool
-    {
-        return true;
     }
 }

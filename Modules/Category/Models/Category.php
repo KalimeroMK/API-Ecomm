@@ -93,18 +93,13 @@ use Modules\Product\Models\Product;
  * @method static QueryBuilder|Category whereNotDescendantOf($id)
  * @method static QueryBuilder|Category withDepth(string $as = 'depth')
  * @method static QueryBuilder|Category withoutRoot()
- * @property-read \Kalnoy\Nestedset\Collection|Category[] $child_cat
  * @property-read int|null $child_cat_count
- * @property-read \Kalnoy\Nestedset\Collection|Category[] $childrenCategories
  * @property-read int|null $children_categories_count
  * @property-read Category|null $parent_info
- * @method static \Kalnoy\Nestedset\Collection|static[] get($columns = ['*'])
- * @method static \Kalnoy\Nestedset\Collection|static[] all($columns = ['*'])
  */
 class Category extends Core
 {
-    use NodeTrait;
-    
+
     protected $table = 'categories';
     
     protected $casts = [
@@ -130,60 +125,7 @@ class Category extends Core
     {
         return CategoryFactory::new();
     }
-    
-    /**
-     * @return string
-     */
-    public static function getTree()
-    {
-        $categories = self::get()->toTree();
-        $traverse   = function ($categories, $prefix = '') use (&$traverse, &$allCats) {
-            foreach ($categories as $category) {
-                $allCats[] = ["title" => $prefix.' '.$category->title, "id" => $category->id];
-                $traverse($category->children, $prefix.'-');
-            }
-            
-            return $allCats;
-        };
-        
-        return $traverse($categories);
-    }
-    
-    /**
-     * @return string
-     */
-    public static function getList(): string
-    {
-        $categories = self::get()->toTree();
-        $lists      = '<li class="list-unstyled">';
-        foreach ($categories as $category) {
-            $lists .= self::renderNodeHP($category);
-        }
-        $lists .= "</li>";
-        
-        return $lists;
-    }
-    
-    /**
-     * @param $node
-     *
-     * @return string
-     */
-    public static function renderNodeHP($node): string
-    {
-        $list = '<li class="dropdown-item"><a class="nav-link" href="/categories/'.$node->slug.'">'.$node->title.'</a>';
-        if ($node->children()->count() > 0) {
-            $list .= '<ul class="dropdown border-0 shadow">';
-            foreach ($node->children as $child) {
-                $list .= self::renderNodeHP($child);
-            }
-            $list .= "</ul>";
-        }
-        $list .= "</li>";
-        
-        return $list;
-    }
-    
+
     /**
      * @return int
      */

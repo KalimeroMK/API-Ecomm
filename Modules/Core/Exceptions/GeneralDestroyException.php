@@ -4,13 +4,15 @@ namespace Modules\Core\Exceptions;
 
 class GeneralDestroyException extends GeneralException
 {
-    public $code = 422;
-    
     /**
-     * @return string|null
+     * The HTTP status code for the exception.
+     *
+     * @var int
      */
+    public $code = 422;
+
     public function message(): ?string
     {
-        return "Error while deleting resource";
+        return 'Error while deleting resource';
     }
 }

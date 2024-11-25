@@ -4,13 +4,13 @@ namespace Modules\Core\Exceptions;
 
 class GeneralStoreException extends GeneralException
 {
-    public $code = 422;
-    
     /**
-     * @return string|null
+     * @var int
      */
+    public $code = 422;
+
     public function message(): ?string
     {
-        return "Error while creating resource in the database";
+        return 'Error while creating resource in the database';
     }
 }

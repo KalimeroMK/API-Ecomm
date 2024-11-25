@@ -2,61 +2,43 @@
 
 namespace Modules\Core\Interfaces;
 
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
+
 interface RepositoryInterface
 {
+    public function findAll(): Collection;
+
+    public function findById(int $id): ?Model;
+
+    public function findBy(string $column, mixed $value): ?Model;
+
     /**
-     * @return mixed
-     */
-    public function findAll(): mixed;
-    
-    /**
-     * @param  int  $id
+     * Creates a new entity with the provided data.
      *
-     * @return mixed
+     * @param  array<string, mixed>  $data  Key-value pairs representing the entity's attributes. For example:
+     *                                      - 'name': string
+     *                                      - 'email': string
+     *                                      - 'age': int, etc.
+     * @return Model|null Newly created entity instance.
      */
-    public function findById(int $id): mixed;
-    
+    public function create(array $data): ?Model;
+
     /**
-     * @param  string  $column
-     * @param $value
+     * Updates an existing entity identified by ID with the provided data.
      *
-     * @return mixed
+     * @param  int  $id  The entity's identifier.
+     * @param  array<string, mixed>  $data  Key-value pairs representing the entity's attributes that need updating. For example:
+     *                                      - 'name': string
+     *                                      - 'email': string
+     *                                      - 'age': int, etc.
+     * @return Model|null Updated entity instance.
      */
-    public function findBy(string $column, $value): mixed;
-    
-    /**
-     * @param  array  $data
-     *
-     * @return mixed
-     */
-    public function create(array $data): mixed;
-    
-    /**
-     * @param  int  $id
-     * @param  array  $data
-     *
-     * @return mixed
-     */
-    public function update(int $id, array $data): mixed;
-    
-    /**
-     * @param  int  $id
-     *
-     * @return void
-     */
+    public function update(int $id, array $data): ?Model;
+
     public function delete(int $id): void;
-    
-    /**
-     * @param  int  $id
-     *
-     * @return mixed
-     */
-    public function restore(int $id): mixed;
-    
-    /**
-     * @param  int  $id
-     *
-     * @return mixed
-     */
-    public function findByIdWithTrashed(int $id): mixed;
+
+    public function restore(int $id): ?Model;
+
+    public function findByIdWithTrashed(int $id): ?Model;
 }

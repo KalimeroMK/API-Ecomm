@@ -4,13 +4,13 @@ namespace Modules\Core\Exceptions;
 
 class GeneralUpdateException extends GeneralException
 {
-    public $code = 422;
-    
     /**
-     * @return string|null
+     * @var int
      */
+    public $code = 422;
+
     public function message(): ?string
     {
-        return "Error while updating resource in the database";
+        return 'Error while updating resource in the database';
     }
 }

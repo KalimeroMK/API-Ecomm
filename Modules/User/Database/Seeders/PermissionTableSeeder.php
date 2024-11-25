@@ -2,6 +2,7 @@
 
 namespace Modules\User\Database\Seeders;
 
+use Exception;
 use Illuminate\Database\Seeder;
 use Modules\User\Models\User;
 use Spatie\Permission\Models\Permission;
@@ -13,161 +14,111 @@ class PermissionTableSeeder extends Seeder
     /**
      * Run the database seeders.
      *
-     * @return void
+     * @throws Exception
      */
-    
     public function run(): void
     {
         // Reset cached roles and permissions
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
-        
-        // create permissions
-        $permissions = [
-            'size-list',
-            'size-create',
-            'size-edit',
-            'size-delete',
-            'cart-list',
-            'cart-create',
-            'cart-edit',
-            'cart-delete',
-            'newsletter-list',
-            'newsletter-create',
-            'newsletter-edit',
-            'newsletter-delete',
-            'review-list',
-            'review-create',
-            'review-edit',
-            'review-delete',
-            'user-list',
-            'user-create',
-            'user-edit',
-            'user-delete',
-            'role-list',
-            'role-create',
-            'role-edit',
-            'role-delete',
-            'shipping-list',
-            'shipping-create',
-            'shipping-edit',
-            'shipping-delete',
-            'comment-list',
-            'comment-create',
-            'comment-edit',
-            'comment-delete',
-            'casys-update',
-            'coupon-list',
-            'coupon-create',
-            'coupon-edit',
-            'coupon-delete',
-            'brand-list',
-            'brand-create',
-            'brand-edit',
-            'brand-delete',
-            'message-list',
-            'message-create',
-            'message-edit',
-            'message-delete',
-            'banner-list',
-            'banner-create',
-            'banner-edit',
-            'banner-delete',
-            'settings-list',
-            'settings-create',
-            'settings-edit',
-            'settings-delete',
-            'categories-list',
-            'categories-create',
-            'categories-edit',
-            'categories-delete',
-            'tags-list',
-            'tags-create',
-            'tags-edit',
-            'tags-delete',
-            'post-list',
-            'post-create',
-            'post-edit',
-            'post-delete',
-            'product-list',
-            'product-create',
-            'product-edit',
-            'product-delete',
-            'order-list',
-            'order-create',
-            'order-edit',
-            'order-delete',
+
+        // Define resources and their respective CRUD operations
+        $resources = [
+            'attribute',
+            'banner',
+            'brand',
+            'bundle',
+            'cart',
+            'category',
+            'comment',
+            'coupon',
+            'casys',
+            'message',
+            'newsletter',
+            'order',
+            'page',
+            'post',
+            'product',
+            'review',
+            'settings',
+            'shipping',
+            'size',
+            'tag',
+            'user',
+            'permission',
+            'role',
+            'payment-provider',
+            'notification',
+            'complaint'
         ];
-        foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+
+        $operations = ['list', 'show', 'create', 'update', 'delete'];
+
+        // Create permissions
+        foreach ($resources as $resource) {
+            foreach ($operations as $operation) {
+                Permission::create(['name' => "{$resource}-{$operation}"]);
+            }
         }
-        // create roles and assign existing permissions
-        $role1 = Role::create(['name' => 'manager']);
-        $role1->givePermissionTo([
-            'post-list',
-            'post-create',
-            'post-edit',
-            'post-delete',
-            'product-list',
-            'product-create',
-            'product-edit',
-            'product-delete',
-            'order-list',
-            'order-create',
-            'order-edit',
-            'coupon-list',
-            'coupon-create',
-            'coupon-edit',
-            'coupon-delete',
-            'brand-list',
-            'brand-create',
-            'brand-edit',
-            'brand-delete',
-            'banner-list',
-            'banner-create',
-            'banner-edit',
-            'banner-delete',
-            'user-list',
-            'user-edit',
-        ]);
-        
-        $role2 = Role::create(['name' => 'client']);
-        $role2->givePermissionTo([
-            'order-list',
-            'order-create',
-            'order-edit',
-            'order-delete',
-            'comments-list',
-            'comments-create',
-            'comments-edit',
-            'comments-delete',
-            'review-list',
-            'review-create',
-            'review-edit',
-            'review-delete',
-            'user-list',
-            'user-edit',
-        ]);
-        
+
+        // Assign permissions to roles
+        $managerPermissions = [
+            'post',
+            'product',
+            'order',
+            'coupon',
+            'brand',
+            'banner',
+            'user',
+        ];
+        $clientPermissions = [
+            'order',
+            'comment',
+            'review',
+            'user',
+        ];
+
+        $this->createRoleWithPermissions('manager', $managerPermissions, $operations);
+        $this->createRoleWithPermissions('client', $clientPermissions, $operations);
+
+        // Super-admin gets all permissions
         $role3 = Role::create(['name' => 'super-admin']);
         $role3->givePermissionTo(Permission::all());
-        
-        // create demo users
+
+        // Create demo users and assign roles
+        $this->createUserWithRole('Example User', 'manager@mail.com', 'manager');
+        $this->createUserWithRole('Example client User', 'client@mail.com', 'client');
+        $this->createUserWithRole('Example Super-Admin User', 'superadmin@mail.com', 'super-admin');
+    }
+
+    /**
+     * @param  string[]  $operations  Array of operation names
+     * @param  string[]  $resources  Array of resource names
+     */
+    private function createRoleWithPermissions(string $roleName, array $resources, array $operations): void
+    {
+        $role = Role::create(['name' => $roleName]);
+        foreach ($resources as $resource) {
+            foreach ($operations as $operation) {
+                $role->givePermissionTo("{$resource}-{$operation}");
+            }
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function createUserWithRole(string $name, string $email, string $roleName): void
+    {
         $user = User::factory()->create([
-            'name'  => 'Example User',
-            'email' => 'manager@mail.com',
+            'name' => $name,
+            'email' => $email,
+            'password' => bcrypt('password'),
         ]);
-        $user->assignRole($role1);
-        
-        $user = User::factory()->create([
-            'name'  => 'Example client User',
-            'email' => 'client@mail.com',
-        ]);
-        $user->assignRole($role2);
-        
-        $user = User::factory()->create([
-            'name'  => 'Example Super-Admin User',
-            'email' => 'superadmin@mail.com',
-        ]);
-        $user->assignRole($role3);
+
+        if (!$user instanceof User) {
+            throw new Exception('User creation did not return a User model instance.');
+        }
+
+        $user->assignRole($roleName);
     }
 }
