@@ -186,6 +186,23 @@ return [
         /*
          * Package Service Providers...
          */
+        \Modules\Banner\Providers\BannerServiceProvider::class,
+        \Modules\Billing\Providers\BillingServiceProvider::class,
+        \Modules\Brand\Providers\BrandServiceProvider::class,
+        \Modules\Category\Providers\CategoryServiceProvider::class,
+        \Modules\Cart\Providers\CartServiceProvider::class,
+        \Modules\Core\Providers\CoreServiceProvider::class,
+        \Modules\Coupon\Providers\CouponServiceProvider::class,
+        \Modules\Front\Providers\FrontServiceProvider::class,
+        \Modules\Message\Providers\MessageServiceProvider::class,
+        \Modules\Newsletter\Providers\NewsletterServiceProvider::class,
+        \Modules\Order\Providers\OrderServiceProvider::class,
+        \Modules\Post\Providers\PostServiceProvider::class,
+        \Modules\Product\Providers\ProductServiceProvider::class,
+        \Modules\Shipping\Providers\ShippingServiceProvider::class,
+        \Modules\Tag\Providers\TagServiceProvider::class,
+        \Modules\User\Providers\UserServiceProvider::class,
+        \Modules\Size\Providers\SizeServiceProvider::class,
         Barryvdh\DomPDF\ServiceProvider::class,
         FilterableServiceProvider::class,
         
